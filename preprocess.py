@@ -93,6 +93,8 @@ def extract_text_from_url(url: str) -> str:
         slug = ''
         for segment in reversed(segments):
             # Skip segments that are mostly numbers (like 'rcna240477')
+            if 'rcna' in segment.lower():
+                continue
             if re.match(r'^[a-z]*\d+$', segment.lower()):
                 continue
             # Skip very short segments (likely category codes)
@@ -104,19 +106,13 @@ def extract_text_from_url(url: str) -> str:
         # If no good segment found, use the last one
         if not slug and segments:
             slug = segments[-1]
-        
-        # Replace hyphens and underscores with spaces
+            
+        # Clean the slug
         text = slug.replace('-', ' ').replace('_', ' ')
-        
-        # Remove any remaining special characters except spaces and letters
+        text = re.sub(r'\brcna\b', '', text, flags=re.IGNORECASE)  # remove independent rcna
         text = re.sub(r'[^a-zA-Z\s]', ' ', text)
-        
-        # Clean up multiple spaces and strip
-        text = re.sub(r'\s+', ' ', text).strip()
-        
-        # Convert to lowercase for consistency
-        text = text.lower()
-        
+        text = re.sub(r'\s+', ' ', text).strip().lower()
+
         return text
         
     except Exception as e:
